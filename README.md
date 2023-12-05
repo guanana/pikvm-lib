@@ -1,11 +1,16 @@
 # PiKVM: A Python API for Controlling PiKVM Devices
 
-PiKVM is a Python library that provides a simple and intuitive API for controlling PiKVM devices. With PiKVM, you can easily perform various actions on your PiKVM devices, such as:
+PiKVM is a Python library that provides a simple and intuitive API for controlling PiKVM devices. 
+With PiKVM, you can easily perform various actions on your PiKVM devices, such as:
 
 * Getting system information
 * Controlling ATX power
 * Managing Mass Storage Device (MSD) images
 * Interacting with General-Purpose Input/Output (GPIO) channels
+
+
+With PiKVM, you can automate tasks, integrate PiKVMs into your existing applications, 
+and extend the capabilities of your PiKVM devices.
 
 ## Installation
 
@@ -83,8 +88,3 @@ pikvm.connect_msd()
 ```python
 pikvm.switch_gpio_channel(channel=1, state=1)
 ```
-
-## Conclusion
-
-PiKVM is a powerful and versatile library that makes it easy to control PiKVM devices from Python scripts. 
-With PiKVM, you can automate tasks, integrate PiKVMs into your existing applications, and extend the capabilities of your PiKVM devices.
