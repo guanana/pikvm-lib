@@ -55,7 +55,7 @@ jobs:
   github-release:
     name: Sign the Python distribution with Sigstore and upload them to GitHub Release
     needs:
-    - publish-to-pypi
+    - pypi-publish
     runs-on: ubuntu-latest
 
     permissions:
