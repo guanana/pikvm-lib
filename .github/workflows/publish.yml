@@ -78,14 +78,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
+          VERSION=$(python setup.py --version)
           gh release create
-          '${{ github.ref_name }}'
+          $VERSION
           --repo '${{ github.repository }}'
           --notes ""
       - name: Upload artifact signatures to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: >-
+          VERSION=$(python setup.py --version)
           gh release upload
-          '${{ github.ref_name }}' dist/**
+          $VERSION dist/**
           --repo '${{ github.repository }}'
