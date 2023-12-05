@@ -31,25 +31,25 @@ After installing PiKVM, you can import it into your Python script and create an 
 ```python
 from pikvm_lib import pikvm
 
-pikvm = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
+pikvm_instance = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
 ```
 
 Once you have created an instance of the `PiKVM` class, you can use it to interact with your PiKVM device. 
 For example, you can get the system information of the device:
 
 ```python
-system_info = pikvm.get_system_info()
+system_info = pikvm_instance.get_system_info()
 print(system_info)
 ```
 
 You can also control the ATX power of the device:
 
 ```python
-pikvm.set_atx_power(action="on")
+pikvm_instance.set_atx_power(action="on")
 ```
 
 For more information on how to use PiKVM, 
-please refer to the official documentation: [https://docs.pikvm.org/](https://docs.pikvm.org/): [https://docs.pikvm.org/](https://docs.pikvm.org/)
+please refer to the official documentation: [PiKVM official web](https://docs.pikvm.org/) and [PiKVM API Reference](https://docs.pikvm.org/api/)
 
 ## Examples
 
@@ -60,31 +60,31 @@ Here are some examples of how to use PiKVM to perform common tasks:
 ```python
 from pikvm_lib import pikvm
 
-pikvm = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
-system_info = pikvm.get_system_info()
+pikvm_instance = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
+system_info = pikvm_instance.get_system_info()
 print(system_info)
 ```
 
 * **Turning on the ATX power:**
 
 ```python
-pikvm.set_atx_power(action="on")
+pikvm_instance.set_atx_power(action="on")
 ```
 
 * **Uploading an MSD image:**
 
 ```python
-pikvm.upload_msd_image(filepath="/path/to/image.iso")
+pikvm_instance.upload_msd_image(filepath="/path/to/image.iso")
 ```
 
 * **Connecting the MSD:**
 
 ```python
-pikvm.connect_msd()
+pikvm_instance.connect_msd()
 ```
 
 * **Switching a GPIO channel:**
 
 ```python
-pikvm.switch_gpio_channel(channel=1, state=1)
+pikvm_instance.switch_gpio_channel(channel=1, state=1)
 ```
