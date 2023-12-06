@@ -58,6 +58,30 @@ class TestPiKVM(unittest.TestCase):
             verify=False
         )
 
+    @patch('pikvm_lib.pikvm.PiKVM._get')
+    def test_get_msd_state(self, mock_get_msd_state):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = '{"result": {"state": "on"}}'
+        mock_get_msd_state.return_value = mock_response
+
+        result = self.pikvm_instance.get_msd_state()
+
+        self.assertEqual(result, {"state": "on"})
+        mock_get_msd_state.assert_called_once_with('/api/msd')
+
+    @patch('pikvm_lib.pikvm.PiKVM._get')
+    def test_get_gpio_state(self, mock_get_gpio_state):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = '{"result": {"state": "on"}}'
+        mock_get_gpio_state.return_value = mock_response
+
+        result = self.pikvm_instance.get_gpio_state()
+
+        self.assertEqual(result, {"state": "on"})
+        mock_get_gpio_state.assert_called_once_with('/api/gpio')
+
 
 if __name__ == '__main__':
     unittest.main()
