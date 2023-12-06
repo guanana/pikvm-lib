@@ -1,6 +1,6 @@
 [project]
 name = "pikvm_lib"
-version = "0.1.4"
+version = "0.2.0"
 authors = [
   { name="guanana", email="guanana2@gmail.com" },
 ]
@@ -33,7 +33,7 @@ Homepage = "https://github.com/guanana/pikvm-lib"
 Issues = "https://github.com/guanana/pikvm-lib/issues"
 
 [tool.bumpver]
-current_version = "0.1.4"
+current_version = "0.2.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
