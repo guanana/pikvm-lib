@@ -29,9 +29,9 @@ After installing PiKVM, you can import it into your Python script and create an 
 * `password`: The password for authentication
 
 ```python
-from pikvm_lib import pikvm
+from pikvm_lib import PiKVM
 
-pikvm_instance = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
+pikvm_instance = PiKVM(hostname="192.168.1.10", username="admin", password="password")
 ```
 
 Once you have created an instance of the `PiKVM` class, you can use it to interact with your PiKVM device. 
@@ -58,9 +58,9 @@ Here are some examples of how to use PiKVM to perform common tasks:
 * **Getting system information:**
 
 ```python
-from pikvm_lib import pikvm
+from pikvm_lib import PiKVM
 
-pikvm_instance = pikvm.PiKVM(hostname="192.168.1.10", username="admin", password="password")
+pikvm_instance = PiKVM(hostname="192.168.1.10", username="admin", password="password")
 system_info = pikvm_instance.get_system_info()
 print(system_info)
 ```
