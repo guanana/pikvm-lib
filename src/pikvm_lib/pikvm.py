@@ -11,6 +11,7 @@ class PiKVM:
     from ._msd import (get_msd_state, set_msd_parameters, connect_msd, disconnect_msd, reset_msd,
                        upload_msd_remote, upload_msd_image, remove_msd_image)
     from ._gpio import pulse_gpio_channel, switch_gpio_channel, get_gpio_state
+    from ._streamer import get_streamer_state, get_streamer_snapshot
 
     def __init__(self, hostname, username, password, secret=None, schema="https://", cert_trusted=False):
         """
