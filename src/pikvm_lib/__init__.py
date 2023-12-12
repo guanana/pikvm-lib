@@ -1,5 +1,6 @@
 import logging
 from .pikvm import PiKVM
+from .pikvm_websocket import PiKVMWebsocket
 
 
 # Create a logger
