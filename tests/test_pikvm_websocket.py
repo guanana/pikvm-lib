@@ -216,6 +216,26 @@ class TestPiKVMWebsocket(unittest.TestCase):
         # 2 control, 2 for alt, 2 for delete
         self.assertEqual(self.pikvm_instance.ws.send.call_count, 6)
 
+    def test_send_key_press(self):
+        control_on, control_off = create_special_event("ControlLeft")
+        key_on, key_off = create_key_event("b")
+        # Make the call
+        self.pikvm_instance.send_key_press("ControlLeft")
+        self.pikvm_instance.send_input("b")
+        self.pikvm_instance.send_key_press("ControlLeft", "false")
+        # Check sequence
+        self.mock_websocket.send.assert_has_calls([
+            mock.call(control_on),
+            mock.call(key_on),
+            mock.call(key_off),
+            mock.call(control_off),
+        ])
+        # Check last call was as expected
+        self.mock_websocket.send.assert_called_with(control_off)
+        # Check it was called 4 times:
+        # 2 control, 2 for b
+        self.assertEqual(self.pikvm_instance.ws.send.call_count, 4)
+
 
 if __name__ == '__main__':
     unittest.main()

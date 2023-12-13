@@ -199,6 +199,23 @@ class PiKVMWebsocket(_BuildPiKVM):
             self.logger.debug(f"Key: {key} sent")
         time.sleep(0.001)
 
+    def send_key_press(self, key, action: str = "true"):
+        """
+        Send a key press event for a key.
+
+        :param action: It can be true for press or false to release. Default true/pressed
+        :param key: The key to send.
+        """
+        if action not in ["true", "false"]:
+            self.logger.error("It can only be true for press or false for release")
+            self.logger.error(f"Failed trying to action key {key}")
+            raise
+        self.ws.send(self._create_event(key, action))
+        time.sleep(0.05)
+        if self.extra_verbose:
+            self.logger.debug(f"Key: {key} sent")
+        time.sleep(0.001)
+
     def send_input(self, text: str):
         """
         Send a text input to the PiKVM server.
