@@ -12,15 +12,15 @@ class TestPiKVM(unittest.TestCase):
         self.secret = None
         self.mock_pikvm = patch('pikvm_lib.pikvm.PiKVM.get_system_info',
                                 return_value=mock_pikvm_response.pikvm_mock_info).start()
-        self.pikvm_instance = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https://")
+        self.pikvm_instance = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https")
 
     def test_init_with_invalid_schema(self):
         with self.assertRaises(Exception):
-            PiKVM('hostname', 'username', 'password', schema='ftp://')
+            PiKVM('hostname', 'username', 'password', schema='ftp')
 
     def test_initialization(self):
         # Initialize the PiKVM instance
-        pikvm = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https://")
+        pikvm = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https")
 
         self.assertEqual(pikvm.hostname, "example.com")
         self.assertEqual(pikvm.username, "user")

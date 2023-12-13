@@ -6,12 +6,7 @@ from urllib.parse import urljoin
 import logging
 
 
-class PiKVM:
-    from ._atx import get_atx_state, set_atx_power, click_atx_button
-    from ._msd import (get_msd_state, set_msd_parameters, connect_msd, disconnect_msd, reset_msd,
-                       upload_msd_remote, upload_msd_image, remove_msd_image)
-    from ._gpio import pulse_gpio_channel, switch_gpio_channel, get_gpio_state
-
+class _BuildPiKVM:
     def __init__(self, hostname, username, password, secret=None, schema="https://", cert_trusted=False):
         """
         Initializes the PiKVM object.
@@ -24,23 +19,15 @@ class PiKVM:
         - schema: The protocol schema, either "http" or "https" (default is "https").
         - cert_trusted: Whether the SSL certificate is issue by a trusted authority or not (default is False).
         """
-        self.logger = logging.getLogger(__name__)
-        try:
-            self.schema = re.findall(r"(http|https)://", schema.lower())[0]
-        except IndexError:
-            self.logger.error("Schema must be http or https")
-            raise
-        self.certificate_trusted = cert_trusted
-        if not self.certificate_trusted:
-            requests.packages.urllib3.disable_warnings()
-
         self.hostname = hostname
-        self.base_url = f"{self.schema}://{self.hostname}/placeholder"
         self.username = username
         self.password = password
         self.secret = secret  # Can be found in /etc/kvmd/totp.secret
+        self.certificate_trusted = cert_trusted
+        self.logger = logging.getLogger(__name__)
+        self.schema = schema
         self.headers = self._set_headers()
-        self.systeminfo = self.get_system_info()
+        self.base_url = f"{self.schema}://{self.hostname}/placeholder"
 
     def _set_headers(self):
         """
@@ -60,6 +47,23 @@ class PiKVM:
         }
         return headers
 
+
+class PiKVM(_BuildPiKVM):
+    from ._atx import get_atx_state, set_atx_power, click_atx_button
+    from ._msd import (get_msd_state, set_msd_parameters, connect_msd, disconnect_msd, reset_msd,
+                       upload_msd_remote, upload_msd_image, remove_msd_image)
+    from ._gpio import pulse_gpio_channel, switch_gpio_channel, get_gpio_state
+    from ._streamer import get_streamer_state, get_streamer_snapshot
+
+    def __init__(self, hostname, username, password, secret=None, schema="https", cert_trusted=False):
+        super().__init__(hostname, username, password, secret, schema, cert_trusted)
+        if self.schema not in ["http", "https"]:
+            self.logger.error("Schema must be http or https")
+            raise
+        if not self.certificate_trusted:
+            requests.packages.urllib3.disable_warnings()
+        self.systeminfo = self.get_system_info()
+
     def _call(self, path, options=None):
         """
         Forms the complete URL for an API call.
@@ -71,7 +75,8 @@ class PiKVM:
         Returns:
         - str: The complete URL.
         """
-        self.logger.debug(f"Parameters: schema: {self.schema}, hostname: {self.hostname}, path={path}, options={options}")
+        self.logger.debug(
+            f"Parameters: schema: {self.schema}, hostname: {self.hostname}, path={path}, options={options}")
         if not options:
             url = urljoin(self.base_url, path)
         else:
@@ -207,4 +212,3 @@ class PiKVM:
         - dict: Prometheus metrics information.
         """
         return self._get_infos(path)
-
