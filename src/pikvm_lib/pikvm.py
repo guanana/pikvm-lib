@@ -19,22 +19,15 @@ class _BuildPiKVM:
         - schema: The protocol schema, either "http" or "https" (default is "https").
         - cert_trusted: Whether the SSL certificate is issue by a trusted authority or not (default is False).
         """
-        self.logger = logging.getLogger(__name__)
-        try:
-            self.schema = re.findall(r"(http|https|wss)://", schema.lower())[0]
-        except IndexError:
-            self.logger.error("Schema must be http or https")
-            raise
-        self.certificate_trusted = cert_trusted
-        if not self.certificate_trusted:
-            requests.packages.urllib3.disable_warnings()
-
         self.hostname = hostname
-        self.base_url = f"{self.schema}://{self.hostname}/placeholder"
         self.username = username
         self.password = password
         self.secret = secret  # Can be found in /etc/kvmd/totp.secret
+        self.certificate_trusted = cert_trusted
+        self.logger = logging.getLogger(__name__)
+        self.schema = schema
         self.headers = self._set_headers()
+        self.base_url = f"{self.schema}://{self.hostname}/placeholder"
 
     def _set_headers(self):
         """
@@ -62,8 +55,13 @@ class PiKVM(_BuildPiKVM):
     from ._gpio import pulse_gpio_channel, switch_gpio_channel, get_gpio_state
     from ._streamer import get_streamer_state, get_streamer_snapshot
 
-    def __init__(self, hostname, username, password, secret=None, schema="https://", cert_trusted=False):
+    def __init__(self, hostname, username, password, secret=None, schema="https", cert_trusted=False):
         super().__init__(hostname, username, password, secret, schema, cert_trusted)
+        if self.schema not in ["http", "https"]:
+            self.logger.error("Schema must be http or https")
+            raise
+        if not self.certificate_trusted:
+            requests.packages.urllib3.disable_warnings()
         self.systeminfo = self.get_system_info()
 
     def _call(self, path, options=None):
@@ -214,4 +212,3 @@ class PiKVM(_BuildPiKVM):
         - dict: Prometheus metrics information.
         """
         return self._get_infos(path)
-
