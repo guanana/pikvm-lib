@@ -11,8 +11,9 @@ from .pikvm import _BuildPiKVM
 
 class PiKVMWebsocket(_BuildPiKVM):
 
-    def __init__(self, hostname, username, password, secret=None, schema="wss://", cert_trusted=False, extra_verbose=False):
-        super().__init__(hostname, username, password, secret, schema, cert_trusted)
+    def __init__(self, hostname, username, password, secret=None, cert_trusted=False, extra_verbose=False):
+        super().__init__(hostname, username, password, secret, schema="wss", cert_trusted=cert_trusted)
+
         self.base_wss = "/api/ws?stream=0"
         self.ws = self._connect()
         self.extra_verbose = extra_verbose
@@ -104,6 +105,20 @@ class PiKVMWebsocket(_BuildPiKVM):
         else:
             self.send_key(f"Key{key.upper()}")
 
+    def send_ctrl_alt_sup(self):
+        self.ws.send(self._create_event("ControlLeft", "true"))
+        time.sleep(0.05)
+        self.ws.send(self._create_event("AltLeft", "true"))
+        time.sleep(0.05)
+        self.ws.send(self._create_event("Delete", "true"))
+        time.sleep(0.05)
+        self.ws.send(self._create_event("ControlLeft", "false"))
+        time.sleep(0.05)
+        self.ws.send(self._create_event("AltLeft", "false"))
+        time.sleep(0.05)
+        self.ws.send(self._create_event("Delete", "false"))
+        time.sleep(0.05)
+
     def send_key(self, key):
         self.ws.send(self._create_event(key, "true"))
         time.sleep(0.05)
@@ -124,7 +139,7 @@ class PiKVMWebsocket(_BuildPiKVM):
                 [next(iteration) for _ in range(characters_to_remove)]
                 matches.pop(0)
             else:
-                if key.isalpha() or key.isspace():
+                if key.isalpha() or key.isspace() or key.isdigit():
                     self._send_standard_keys(key)
                 else:
                     self._send_extra_key(key)
