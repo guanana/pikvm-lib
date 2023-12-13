@@ -1,3 +1,7 @@
+"""
+Module for interacting with PiKVM server using WebSocket
+"""
+
 from urllib.parse import urljoin
 import csv
 import websocket
@@ -10,8 +14,22 @@ from .pikvm import _BuildPiKVM
 
 
 class PiKVMWebsocket(_BuildPiKVM):
+    """
+    Class for sending keyboard events to PiKVM server over WebSocket
+    """
 
-    def __init__(self, hostname, username, password, secret=None, cert_trusted=False, extra_verbose=False):
+    def __init__(self, hostname: str, username: str, password: str, secret: str = None, cert_trusted: bool = False,
+                 extra_verbose: bool = False):
+        """
+        Initialize PiKVMWebsocket object
+
+        :param hostname: PiKVM server hostname or IP address
+        :param username: PiKVM server username
+        :param password: PiKVM server password
+        :param secret: PiKVM server secret (optional)
+        :param cert_trusted: Whether to trust server's SSL certificate (optional)
+        :param extra_verbose: Print extra logging information (optional)
+        """
         super().__init__(hostname, username, password, secret, schema="wss", cert_trusted=cert_trusted)
 
         self.base_wss = "/api/ws?stream=0"
@@ -23,6 +41,11 @@ class PiKVMWebsocket(_BuildPiKVM):
             self.logger.debug(self.ws)
 
     def _connect(self):
+        """
+        Connect to PiKVM server over WebSocket
+
+        :return: WebSocket object
+        """
         if not self.certificate_trusted:
             ws = websocket.WebSocket(sslopt={"cert_reqs": ssl.CERT_NONE})
         else:
@@ -32,9 +55,20 @@ class PiKVMWebsocket(_BuildPiKVM):
         return ws
 
     def close(self, **kwargs):
+        """
+        Close WebSocket connection to PiKVM server
+
+        :param kwargs: keyword arguments to pass to WebSocket.close()
+        """
         self.ws.close(**kwargs)
 
-    def _map_csv(self, csvname="keymap.csv"):
+    def _map_csv(self, csvname: str = "keymap.csv"):
+        """
+        Read key mappings from CSV file
+
+        :param csvname: CSV filename (default: keymap.csv)
+        :return: dictionary of key mappings
+        """
         current_dir = os.path.dirname(__file__)
         csvpath = os.path.join(current_dir, csvname)
         map_keys = {}
@@ -54,13 +88,25 @@ class PiKVMWebsocket(_BuildPiKVM):
             self.logger.debug(f"Map loaded:\n {map_keys}")
         return map_keys
 
-    def _create_event(self, key, state):
+    def _create_event(self, key, state: str):
+        """
+        Create JSON event message to send to PiKVM server
+
+        :param key: key to send
+        :param state: key press state (true for pressed, false for released)
+        :return: JSON message
+        """
         event = f'{{"event_type": "key", "event": {{"key": "{key}", "state": {state}}}}}'
         if self.extra_verbose:
             self.logger.debug(event)
         return event
 
     def _send_extra_key(self, key: str):
+        """
+        Send key press event for a special key that is not defined in the key map
+
+        :param key: special key to send
+        """
         try:
             if self.extra_verbose:
                 self.logger.debug(f"Found special keys to send: {key}")
@@ -77,7 +123,15 @@ class PiKVMWebsocket(_BuildPiKVM):
             except KeyError:
                 self.logger.debug(f"Special key found that cannot be recognised {key}")
 
-    def _find_special_keys(self, text):
+    def _find_special_keys(self, text: str):
+        """
+        Find all the special keys in a string of text.
+
+        :param text: The text to search.
+
+        Returns:
+            List[re.Match]: A list of matches for the special keys.
+        """
         matches = []
         p = re.compile("<(?P<word>\w+)>")
         for m in p.finditer(text):
@@ -87,11 +141,21 @@ class PiKVMWebsocket(_BuildPiKVM):
         return matches
 
     def _send_shift_key(self, key):
+        """
+        Send a shift key press event. Used mainly for upper case and special characters
+
+        :param key: The key to send.
+        """
         self.ws.send(self._create_event("ShiftLeft", "true"))
         self.send_key(key)
         self.ws.send(self._create_event("ShiftLeft", "false"))
 
     def _send_standard_keys(self, key):
+        """
+        Send a key press event for a standard key.
+
+        :param key: The key to send.
+        """
         if key.isupper():
             self._send_shift_key(f"Key{key.upper()}")
             if self.extra_verbose:
@@ -106,6 +170,9 @@ class PiKVMWebsocket(_BuildPiKVM):
             self.send_key(f"Key{key.upper()}")
 
     def send_ctrl_alt_sup(self):
+        """
+        Sends the Ctrl+Alt+Delete key combination.
+        """
         self.ws.send(self._create_event("ControlLeft", "true"))
         time.sleep(0.05)
         self.ws.send(self._create_event("AltLeft", "true"))
@@ -120,6 +187,11 @@ class PiKVMWebsocket(_BuildPiKVM):
         time.sleep(0.05)
 
     def send_key(self, key):
+        """
+        Send a key press event for a key.
+
+        :param key: The key to send.
+        """
         self.ws.send(self._create_event(key, "true"))
         time.sleep(0.05)
         self.ws.send(self._create_event(key, "false"))
@@ -128,6 +200,11 @@ class PiKVMWebsocket(_BuildPiKVM):
         time.sleep(0.001)
 
     def send_input(self, text: str):
+        """
+        Send a text input to the PiKVM server.
+
+        :param text: The text to send.
+        """
         self.logger.debug(f"Sending input {text}")
         matches = self._find_special_keys(text)
         iteration = enumerate(text)
