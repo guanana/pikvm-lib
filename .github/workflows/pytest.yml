@@ -123,6 +123,7 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pip install -r requirements.txt
+        python -m pip install -e .
 
     - name: Test with coverage
       if: "matrix.use_coverage"
