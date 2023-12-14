@@ -48,12 +48,15 @@ jobs:
         name: [
           "windows-py310",
           "windows-py311",
+          "windows-py312",
 
           "ubuntu-py310",
           "ubuntu-py311",
+          "ubuntu-py312",
           "ubuntu-pypy3",
 
           "macos-py310",
+          "macos-py312",
 
           "doctesting",
           "plugins",
@@ -68,6 +71,10 @@ jobs:
             python: "3.11"
             os: windows-latest
             tox_env: "py311"
+          - name: "windows-py312"
+            python: "3.12-dev"
+            os: windows-latest
+            tox_env: "py312"
 
           - name: "ubuntu-py310"
             python: "3.10"
@@ -78,8 +85,13 @@ jobs:
             os: ubuntu-latest
             tox_env: "py311"
             use_coverage: true
+          - name: "ubuntu-py312"
+            python: "3.12-dev"
+            os: ubuntu-latest
+            tox_env: "py312"
+            use_coverage: true
           - name: "ubuntu-pypy3"
-            python: "pypy-3.8"
+            python: "pypy-3.9"
             os: ubuntu-latest
             tox_env: "pypy3-xdist"
 
@@ -87,6 +99,10 @@ jobs:
             python: "3.10"
             os: macos-latest
             tox_env: "py310-xdist"
+          - name: "macos-py312"
+            python: "3.12-dev"
+            os: macos-latest
+            tox_env: "py312-xdist"
 
           - name: "plugins"
             python: "3.12"
