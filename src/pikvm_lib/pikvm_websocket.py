@@ -10,10 +10,10 @@ import time
 import os.path
 import re
 
-from .pikvm import _BuildPiKVM
+from pikvm_lib.pikvm_aux.pikvm_aux import BuildPiKVM
 
 
-class PiKVMWebsocket(_BuildPiKVM):
+class PiKVMWebsocket(BuildPiKVM):
     """
     Class for sending keyboard events to PiKVM server over WebSocket
     """
