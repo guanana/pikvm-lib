@@ -1,9 +1,9 @@
-# PiKVM: A Python API for Controlling PiKVM Devices
+# PiKVM-Lib: A Python library for controlling/automating PiKVM Devices
 
 [![codecov](https://codecov.io/gh/guanana/pikvm-lib/graph/badge.svg?token=ZTJV7JLUTK)](https://codecov.io/gh/guanana/pikvm-lib)
 
-PiKVM is a Python library that provides a simple and intuitive API for controlling PiKVM devices. 
-With PiKVM, you can easily perform various actions on your PiKVM devices, such as:
+PiKVM-Lib is a Python library that provides a simple and intuitive API for controlling PiKVM devices. 
+With PiKVM-Lib, you can easily perform various actions on your PiKVM devices, such as:
 
 * Getting system information
 * Controlling ATX power
@@ -14,7 +14,7 @@ With PiKVM, you can easily perform various actions on your PiKVM devices, such a
 * Send keys to the server
 
 
-With PiKVM, you can automate tasks, integrate PiKVMs into your existing applications, 
+With PiKVM-Lib, you can automate tasks, integrate PiKVMs into your existing applications, 
 and extend the capabilities of your PiKVM devices.
 
 ## Installation
