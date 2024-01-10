@@ -1,6 +1,6 @@
 [project]
 name = "pikvm_lib"
-version = "0.4.1"
+version = "0.4.2"
 authors = [
   { name="guanana", email="guanana2@gmail.com" },
 ]
@@ -34,7 +34,7 @@ Homepage = "https://github.com/guanana/pikvm-lib"
 Issues = "https://github.com/guanana/pikvm-lib/issues"
 
 [tool.bumpver]
-current_version = "0.4.1"
+current_version = "0.4.2"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
@@ -44,6 +44,12 @@ post_commit_hook = ""
 commit = true
 tag = true
 push = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pikvm_lib = ["keymap.csv", "keymap_shift.csv"]
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
