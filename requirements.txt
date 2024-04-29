@@ -16,5 +16,5 @@ requests==2.31.0
     # via pikvm-lib (pyproject.toml)
 urllib3==2.1.0
     # via requests
-websocket-client==1.7.0
+websocket-client==1.8.0
     # via pikvm-lib (pyproject.toml)
