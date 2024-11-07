@@ -14,7 +14,7 @@ pyotp==2.9.0
     # via pikvm-lib (pyproject.toml)
 requests==2.31.0
     # via pikvm-lib (pyproject.toml)
-urllib3==2.1.0
+urllib3==2.2.2
     # via requests
 websocket-client==1.8.0
     # via pikvm-lib (pyproject.toml)
