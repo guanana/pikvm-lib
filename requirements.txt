@@ -8,7 +8,7 @@ certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
     # via requests
-idna==3.7
+idna==3.10
     # via requests
 pyotp==2.9.0
     # via pikvm-lib (pyproject.toml)
