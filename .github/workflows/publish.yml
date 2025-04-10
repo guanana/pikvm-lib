@@ -8,7 +8,6 @@
 # You can also reference a tag or branch, but the action may change without warning.
 
 name: Publish Python distribution to PyPI and Github
-
 on:
   push:
     branches:
@@ -68,7 +67,7 @@ jobs:
 
     steps:
       - name: Download all the dists
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-package-distributions
           path: dist/
