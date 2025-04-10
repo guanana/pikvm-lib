@@ -11,7 +11,6 @@ on:
     branches:
       - main
       - "[0-9]+.[0-9]+.x"
-
 env:
   PYTEST_ADDOPTS: "--color=yes"
 
@@ -32,7 +31,7 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
     - name: Build and Check Package
-      uses: hynek/build-and-inspect-python-package@v1.5.4
+      uses: hynek/build-and-inspect-python-package@v2.12.0
 
   build:
     needs: [package]
