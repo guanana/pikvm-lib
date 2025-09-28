@@ -3,6 +3,8 @@ Module for interacting with PiKVM server using WebSocket
 """
 
 from urllib.parse import urljoin
+from importlib.resources import files
+
 import csv
 import websocket
 import ssl
@@ -155,29 +157,29 @@ class PiKVMWebsocket(BuildPiKVM):
 
     def _map_csv(self, csvname: str = "keymap.csv"):
         """
-        Read key mappings from CSV file
+        Read key mappings from a CSV file bundled with this package.
 
         :param csvname: CSV filename (default: keymap.csv)
         :return: dictionary of key mappings
         """
-        current_dir = os.path.dirname(__file__)
-        csvpath = os.path.join(current_dir, csvname)
+        # Locate the CSV file inside the same package
+        resource = files(__package__) / csvname
+
         map_keys = {}
-        with open(csvpath, 'r') as csvfile:
-            # Create a CSV reader object
-            reader = csv.reader(csvfile, delimiter=',')
+        with resource.open("r", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile, delimiter=",")
             for row in reader:
                 try:
-                    # Extract key and value from the row
                     key = row[0]
                     value = row[1]
-                    # Add key-value pair to the map
                     map_keys[key] = value
-                except IndexError as e:
-                    self.logger.error(f"Couldn't parse {key} or {value}")
+                except IndexError:
+                    self.logger.error(f"Couldn't parse row: {row}")
+
         if self.extra_verbose:
             self.logger.debug(f"Map loaded:\n {map_keys}")
         return map_keys
+
 
     def _create_event(self, key, state: str):
         """

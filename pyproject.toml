@@ -49,7 +49,7 @@ push = false
 where = ["src"]
 
 [tool.setuptools.package-data]
-pikvm_lib = ["keymap.csv", "keymap_shift.csv"]
+pikvm_lib = ["keymap.csv", "keymap_shift.csv", "keymap_pyautogui.csv"]
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
