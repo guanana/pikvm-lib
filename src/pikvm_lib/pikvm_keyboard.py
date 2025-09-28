@@ -1,16 +1,13 @@
 from pikvm_lib.pikvm_aux.pikvm_endpoints_base import PiKVMEndpoints
+from pikvm_lib.keymaps import KEYMAP_PYAUTOGUI
 import time
-import os
-import csv
-from importlib.resources import files
 
 
 # API to align with pyautogui API
 class PiKVMKeyboard(PiKVMEndpoints):
 
     def __init__(self):
-        self.map_csv_pyautogui = {}
-        self._load_keymap_pyautogui()
+        self.map_csv_pyautogui = KEYMAP_PYAUTOGUI
 
     def keyUp(self, key):
         if self._requires_shift(key):
@@ -68,23 +65,3 @@ class PiKVMKeyboard(PiKVMEndpoints):
         #     return "Backquote"
         else:
             return f"Key{key.upper()}"
-    
-
-    def _load_keymap_pyautogui(self):
-        # Point to the CSV file inside the same package
-        resource = files(__package__) / "keymap_pyautogui.csv"
-
-        map_keys = {}
-        with resource.open("r", encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile, delimiter=",")
-            for row in reader:
-                try:
-                    key = row[0]
-                    value = row[1]
-                    if value == "":
-                        continue
-                    map_keys[key] = value
-                except IndexError:
-                    self.logger.error(f"Couldn't parse row: {row}")
-
-        self.map_csv_pyautogui = map_keys

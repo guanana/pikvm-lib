@@ -48,9 +48,6 @@ push = false
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-pikvm_lib = ["keymap.csv", "keymap_shift.csv", "keymap_pyautogui.csv"]
-
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
     'current_version = "{version}"',

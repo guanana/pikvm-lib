@@ -3,17 +3,15 @@ Module for interacting with PiKVM server using WebSocket
 """
 
 from urllib.parse import urljoin
-from importlib.resources import files
 
-import csv
 import websocket
 import ssl
 import time
-import os.path
 import re
 import json
 
 from pikvm_lib.pikvm_aux.pikvm_aux import BuildPiKVM
+from pikvm_lib.keymaps import KEYMAP_BASE,KEYMAP_SHIFT
 
 
 class PiKVMWebsocket(BuildPiKVM):
@@ -44,8 +42,8 @@ class PiKVMWebsocket(BuildPiKVM):
         self.extra_verbose = extra_verbose
         self.ws = self._connect()
         self.streamer_active = activate_streamer
-        self.map_csv = self._map_csv()
-        self.map_shift_csv = self._map_csv("keymap_shift.csv")
+        self.map_csv = KEYMAP_BASE
+        self.map_shift_csv = KEYMAP_SHIFT
         if self.extra_verbose:
             self.logger.debug(self.ws)
 
@@ -162,24 +160,10 @@ class PiKVMWebsocket(BuildPiKVM):
         :param csvname: CSV filename (default: keymap.csv)
         :return: dictionary of key mappings
         """
-        # Locate the CSV file inside the same package
-        resource = files(__package__) / csvname
-
-        map_keys = {}
-        with resource.open("r", encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile, delimiter=",")
-            for row in reader:
-                try:
-                    key = row[0]
-                    value = row[1]
-                    map_keys[key] = value
-                except IndexError:
-                    self.logger.error(f"Couldn't parse row: {row}")
-
-        if self.extra_verbose:
-            self.logger.debug(f"Map loaded:\n {map_keys}")
-        return map_keys
-
+        if csvname == "keymap.csv":
+            return KEYMAP_BASE
+        elif csvname == "keymap_shift.csv":
+            return KEYMAP_SHIFT
 
     def _create_event(self, key, state: str):
         """

@@ -47,11 +47,6 @@ class TestPiKVMKeyboard(unittest.TestCase):
             'delete': 'Delete'
         }
 
-    def test_initialization(self):
-        # Test that the object initializes properly and loads keymap
-        with patch('pikvm_lib.pikvm_keyboard.PiKVMKeyboard._load_keymap_pyautogui') as mock_load:
-            keyboard = PiKVMKeyboard()
-            mock_load.assert_called_once()
 
     def test_key_down(self):
         # Test keyDown for a standard key
@@ -138,33 +133,6 @@ class TestPiKVMKeyboard(unittest.TestCase):
         self.assertEqual(self.keyboard._key_to_keycode(','), 'Comma')  # From map_csv
         self.assertEqual(self.keyboard._key_to_keycode('_'), 'Minus')  # From map_shift_csv
         self.assertEqual(self.keyboard._key_to_keycode('"'), 'Quote')  # Special case
-
-    def test_load_keymap_pyautogui(self):
-        # Test loading of keymap from CSV
-        mock_open = mock.mock_open(read_data='key1,value1\nkey2,value2\nkey3\n')
-        
-        with patch('os.path.dirname', return_value='/mock/dir'), \
-             patch('os.path.join', return_value='/mock/dir/keymap_pyautogui.csv'), \
-             patch('builtins.open', mock_open), \
-             patch.object(self.keyboard, 'logger') as mock_logger:
-            
-            # Reset the map and call load method
-            self.keyboard.map_csv_pyautogui = {}
-            self.keyboard._load_keymap_pyautogui()
-            
-            # Verify the keys were loaded correctly
-            self.assertEqual(self.keyboard.map_csv_pyautogui, {
-                'key1': 'value1',
-                'key2': 'value2'
-            })
-            
-            # key3 should be skipped because value is empty
-            self.assertNotIn('key3', self.keyboard.map_csv_pyautogui)
-            
-            # Test error handling
-            mock_open.return_value.__enter__.return_value.read.side_effect = IndexError()
-            self.keyboard._load_keymap_pyautogui()
-            mock_logger.error.assert_called()
 
 
 if __name__ == '__main__':
