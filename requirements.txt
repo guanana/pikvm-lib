@@ -4,17 +4,17 @@
 #
 #    pip-compile pyproject.toml
 #
-certifi==2024.7.4
+certifi==2025.1.31
     # via requests
-charset-normalizer==3.3.2
+charset-normalizer==3.4.1
     # via requests
-idna==3.7
+idna==3.10
     # via requests
 pyotp==2.9.0
     # via pikvm-lib (pyproject.toml)
 requests==2.32.3
     # via pikvm-lib (pyproject.toml)
-urllib3==2.2.2
+urllib3==2.3.0
     # via requests
 websocket-client==1.8.0
     # via pikvm-lib (pyproject.toml)
