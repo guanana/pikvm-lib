@@ -13,7 +13,7 @@ class TestPiKVM(unittest.TestCase):
         self.secret = None
         self.mock_pikvm = patch('pikvm_lib.pikvm.PiKVM.get_system_info',
                                 return_value=mock_pikvm_response.pikvm_mock_info).start()
-        self.pikvm_instance = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https")
+        self.pikvm_instance = PiKVM(self.hostname, self.username, self.password, secret=self.secret, schema="https", ws_client=None)
 
     @patch('pikvm_lib.pikvm.PiKVM._get')
     def test_get_gpio_state(self, mock_get_gpio_state):

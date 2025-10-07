@@ -12,7 +12,8 @@ requires-python = ">=3.9"
 dependencies = [
     "requests>=2.31.0",
     "pyotp<=2.9.0",
-    "websocket-client>=1.7.0"
+    "websocket-client>=1.7.0",
+    "pillow>=11.3.0"
 ]
 
 
@@ -47,9 +48,6 @@ push = false
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools.package-data]
-pikvm_lib = ["keymap.csv", "keymap_shift.csv"]
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [

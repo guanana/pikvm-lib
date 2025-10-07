@@ -3,14 +3,15 @@ Module for interacting with PiKVM server using WebSocket
 """
 
 from urllib.parse import urljoin
-import csv
+
 import websocket
 import ssl
 import time
-import os.path
 import re
+import json
 
 from pikvm_lib.pikvm_aux.pikvm_aux import BuildPiKVM
+from pikvm_lib.keymaps import KEYMAP_BASE,KEYMAP_SHIFT
 
 
 class PiKVMWebsocket(BuildPiKVM):
@@ -19,7 +20,8 @@ class PiKVMWebsocket(BuildPiKVM):
     """
 
     def __init__(self, hostname: str, username: str, password: str, secret: str = None, cert_trusted: bool = False,
-                 extra_verbose: bool = False):
+                 extra_verbose: bool = False, max_retries: int = 3, retry_delay: float = 1.0, activate_streamer: bool = False):
+
         """
         Initialize PiKVMWebsocket object
 
@@ -29,30 +31,106 @@ class PiKVMWebsocket(BuildPiKVM):
         :param secret: PiKVM server secret (optional)
         :param cert_trusted: Whether to trust server's SSL certificate (optional)
         :param extra_verbose: Print extra logging information (optional)
+        :param max_retries: Maximum number of connection retry attempts (optional)
+        :param retry_delay: Delay between retry attempts in seconds (optional)
         """
         super().__init__(hostname, username, password, secret, schema="wss", cert_trusted=cert_trusted)
 
-        self.base_wss = "/api/ws?stream=0"
-        self.ws = self._connect()
+        self.base_wss = "/api/ws?stream={}".format(int(activate_streamer))
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
         self.extra_verbose = extra_verbose
-        self.map_csv = self._map_csv()
-        self.map_shift_csv = self._map_csv("keymap_shift.csv")
+        self.ws = self._connect()
+        self.streamer_active = activate_streamer
+        self.map_csv = KEYMAP_BASE
+        self.map_shift_csv = KEYMAP_SHIFT
         if self.extra_verbose:
             self.logger.debug(self.ws)
 
+    def __enter__(self):
+        """Support for context manager"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Ensure websocket is closed when exiting context"""
+        self.close()
+
     def _connect(self):
         """
-        Connect to PiKVM server over WebSocket
+        Connect to PiKVM server over WebSocket with retry mechanism
 
         :return: WebSocket object
+        :raises: Exception after max_retries attempts
         """
-        if not self.certificate_trusted:
-            ws = websocket.WebSocket(sslopt={"cert_reqs": ssl.CERT_NONE})
-        else:
-            ws = websocket.WebSocket()
-        url = urljoin(self.base_url, self.base_wss)
-        ws.connect(url, header=self.headers)
-        return ws
+        retries = 0
+        last_exception = None
+        self.logger.debug(f"Connecting to {self.base_url} with {self.base_wss}")
+        while retries < self.max_retries:
+            try:
+                if not self.certificate_trusted:
+                    ws = websocket.WebSocket(sslopt={"cert_reqs": ssl.CERT_NONE})
+                else:
+                    ws = websocket.WebSocket()
+                url = urljoin(self.base_url, self.base_wss)
+                ws.connect(url, header=self.headers)
+                self.logger.debug(f"Connected to {url} successfully")
+                return ws
+            except Exception as e:
+                last_exception = e
+                retries += 1
+                if retries < self.max_retries:
+                    self.logger.info(f"WebSocket connection attempt {retries} failed: {e}. Retrying in {self.retry_delay} seconds...")
+                    time.sleep(self.retry_delay)
+
+        self.logger.error(f"Failed to connect to WebSocket after {self.max_retries} attempts: {last_exception}")
+        raise last_exception
+
+    def _ensure_connection(self):
+        """
+        Ensure WebSocket connection is active, reconnect if necessary
+
+        :return: None
+        """
+        try:
+            self.ws.ping()
+        except (websocket.WebSocketConnectionClosedException, 
+                websocket.WebSocketException,
+                ssl.SSLEOFError) as e:
+            self.logger.info(f"WebSocket connection lost: {e}. Attempting to reconnect...")
+            try:
+                self.ws.close()
+            except Exception:
+                pass
+            self.ws = self._connect()
+            return False
+        return True
+
+    def _send_with_retry(self, event_str: str):
+        """
+        Send WebSocket message with automatic reconnection
+
+        :param event_str: Event string to send
+        """
+        retries = 0
+        while retries < self.max_retries:
+            try:
+                self._ensure_connection()
+                self.ws.send(event_str)
+                return
+            except (websocket.WebSocketConnectionClosedException, 
+                   websocket.WebSocketException, 
+                   ssl.SSLEOFError) as e:
+                retries += 1
+                if retries >= self.max_retries:
+                    self.logger.error(f"Failed to send WebSocket message after {self.max_retries} attempts: {e}")
+                    raise
+                self.logger.info(f"Send attempt {retries} failed: {e}. Retrying in {self.retry_delay} seconds...")
+                time.sleep(self.retry_delay)
+                try:
+                    self.ws.close()
+                except Exception:
+                    pass
+                self.ws = self._connect()
 
     def close(self, **kwargs):
         """
@@ -61,32 +139,31 @@ class PiKVMWebsocket(BuildPiKVM):
         :param kwargs: keyword arguments to pass to WebSocket.close()
         """
         self.ws.close(**kwargs)
+    
+    def get_json_message(self):
+        """
+        Receive and parse a JSON message from the WebSocket connection.
+        
+        :return: Parsed JSON message as a Python object, or None if parsing fails
+        """
+        message = self.ws.recv()
+        try:
+            return json.loads(message)
+        except json.JSONDecodeError as e:
+            self.logger.debug(f"Failed to parse JSON message: {e} Raw message: {message}")
+            return None
 
     def _map_csv(self, csvname: str = "keymap.csv"):
         """
-        Read key mappings from CSV file
+        Read key mappings from a CSV file bundled with this package.
 
         :param csvname: CSV filename (default: keymap.csv)
         :return: dictionary of key mappings
         """
-        current_dir = os.path.dirname(__file__)
-        csvpath = os.path.join(current_dir, csvname)
-        map_keys = {}
-        with open(csvpath, 'r') as csvfile:
-            # Create a CSV reader object
-            reader = csv.reader(csvfile, delimiter=',')
-            for row in reader:
-                try:
-                    # Extract key and value from the row
-                    key = row[0]
-                    value = row[1]
-                    # Add key-value pair to the map
-                    map_keys[key] = value
-                except IndexError as e:
-                    self.logger.error(f"Couldn't parse {key} or {value}")
-        if self.extra_verbose:
-            self.logger.debug(f"Map loaded:\n {map_keys}")
-        return map_keys
+        if csvname == "keymap.csv":
+            return KEYMAP_BASE
+        elif csvname == "keymap_shift.csv":
+            return KEYMAP_SHIFT
 
     def _create_event(self, key, state: str):
         """
@@ -133,7 +210,7 @@ class PiKVMWebsocket(BuildPiKVM):
             List[re.Match]: A list of matches for the special keys.
         """
         matches = []
-        p = re.compile("<(?P<word>\w+)>")
+        p = re.compile(r"<(?P<word>\w+)>")
         for m in p.finditer(text):
             if any(key in m.group() for key in self.map_csv.keys()):
                 self.logger.debug(f"Found special keys to send: {m.start(), m.end(), m.group()}")
@@ -146,9 +223,9 @@ class PiKVMWebsocket(BuildPiKVM):
 
         :param key: The key to send.
         """
-        self.ws.send(self._create_event("ShiftLeft", "true"))
+        self._send_with_retry(self._create_event("ShiftLeft", "true"))
         self.send_key(key)
-        self.ws.send(self._create_event("ShiftLeft", "false"))
+        self._send_with_retry(self._create_event("ShiftLeft", "false"))
 
     def _send_standard_keys(self, key):
         """
@@ -173,17 +250,17 @@ class PiKVMWebsocket(BuildPiKVM):
         """
         Sends the Ctrl+Alt+Delete key combination.
         """
-        self.ws.send(self._create_event("ControlLeft", "true"))
+        self._send_with_retry(self._create_event("ControlLeft", "true"))
         time.sleep(0.05)
-        self.ws.send(self._create_event("AltLeft", "true"))
+        self._send_with_retry(self._create_event("AltLeft", "true"))
         time.sleep(0.05)
-        self.ws.send(self._create_event("Delete", "true"))
+        self._send_with_retry(self._create_event("Delete", "true"))
         time.sleep(0.05)
-        self.ws.send(self._create_event("ControlLeft", "false"))
+        self._send_with_retry(self._create_event("ControlLeft", "false"))
         time.sleep(0.05)
-        self.ws.send(self._create_event("AltLeft", "false"))
+        self._send_with_retry(self._create_event("AltLeft", "false"))
         time.sleep(0.05)
-        self.ws.send(self._create_event("Delete", "false"))
+        self._send_with_retry(self._create_event("Delete", "false"))
         time.sleep(0.05)
 
     def send_key(self, key):
@@ -192,9 +269,9 @@ class PiKVMWebsocket(BuildPiKVM):
 
         :param key: The key to send.
         """
-        self.ws.send(self._create_event(key, "true"))
+        self._send_with_retry(self._create_event(key, "true"))
         time.sleep(0.05)
-        self.ws.send(self._create_event(key, "false"))
+        self._send_with_retry(self._create_event(key, "false"))
         if self.extra_verbose:
             self.logger.debug(f"Key: {key} sent")
         time.sleep(0.001)
@@ -210,7 +287,7 @@ class PiKVMWebsocket(BuildPiKVM):
             self.logger.error("It can only be true for press or false for release")
             self.logger.error(f"Failed trying to action key {key}")
             raise
-        self.ws.send(self._create_event(key, action))
+        self._send_with_retry(self._create_event(key, action))
         time.sleep(0.05)
         if self.extra_verbose:
             self.logger.debug(f"Key: {key} sent")

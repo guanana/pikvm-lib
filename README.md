@@ -101,52 +101,42 @@ pikvm_instance.switch_gpio_channel(channel=1, state=1)
 pikvm_instance.get_streamer_snapshot(snapshot_path="/home/user/pikvm-snapshots",
                             filename="test.txt", ocr=True)
 ```
-* **Take snapshot and receive image:**
+
+* **Take snapshot and receive PIL image:**
 
 ```python
-pikvm_instance.get_streamer_snapshot(snapshot_path="/home/user/pikvm-snapshots",
-                            filename="test.jpeg", ocr=False)
-```
-## PiKVM websocket
-The PiKVMWebsocket class is a Python class that allows you to send keyboard events to a PiKVM server over WebSocket. 
-
-It provides methods for sending individual keys, key combinations, and text input. 
-
-The class also handles the connection to the PiKVM server and the parsing of the WebSocket messages.
-
-### Usage examples
-```python
-from pikvm_lib import PiKVMWebsocket
-
-hostname = "192.168.1.10"  # Replace with your PiKVM server's hostname or IP address
-username = "user"
-password = "password"
-
-# Create a PiKVMWebsocket object
-websocket = PiKVMWebsocket(hostname, username, password)
-
-# Send the Ctrl+Alt+Delete key combination
-websocket.send_ctrl_alt_sup()
-
-# Send the text "Hello, world!"
-websocket.send_input("Hello, world!")
+pikvm_instance.get_streamer_image()
 ```
 
+* **Send Key Press:**
+
 ```python
-from pikvm_lib import PiKVMWebsocket
+pikvm_instance.press('a')
+```
 
-hostname = "192.168.1.10"  # Replace with your PiKVM server's hostname or IP address
-username = "user"
-password = "password"
+* **Send Hot Key:**
 
-# Create a PiKVMWebsocket object
-websocket = PiKVMWebsocket(hostname, username, password)
+```python
+pikvm_instance.hotkey('ctrl', 'alt', 'delete')
+```
 
-# Send the F2 key
-websocket.send_key("<F2>")
+* **Move Mouse to Location (x,y):**
 
-# Send the Ctrl+B key
-websocket.send_key_press("ControlLeft", "true")
-websocket.send_input("b") # or websocket.send_key("KeyB")
-websocket.send_key_press("ControlLeft", "false")
+```python
+pikvm_instance.send_mouse_move_event(128, 256)
+```
+
+* **Click Mouse at Location:**
+
+```python
+pikvm_instance.send_click("left")
+
+```
+
+* **Drag mouse to Location (x,y):**
+```python
+pikvm_instance.send_mouse_event(button, "true")
+pikvm_instance.send_mouse_move_event(128, 256)
+pikvm_instance.send_mouse_event(button, "false")
+
 ```

@@ -5,18 +5,36 @@ from pikvm_lib.pikvm_aux.pikvm_aux import BuildPiKVM
 from pikvm_lib.pikvm_gpio import PiKVMGPIO
 from pikvm_lib.pikvm_msd import PiKVMMSD
 from pikvm_lib.pikvm_streamer import PiKVMStreamer
+from pikvm_lib.pikvm_websocket import PiKVMWebsocket
+from pikvm_lib.pikvm_mouse import PiKVMMouse
+from pikvm_lib.pikvm_keyboard import PiKVMKeyboard
 
+class PiKVM(BuildPiKVM, PiKVMATX, PiKVMGPIO, PiKVMMSD, PiKVMStreamer, PiKVMMouse, PiKVMKeyboard):
 
-class PiKVM(BuildPiKVM, PiKVMATX, PiKVMGPIO, PiKVMMSD, PiKVMStreamer):
-
-    def __init__(self, hostname, username, password, secret=None, schema="https", cert_trusted=False):
+    def __init__(self, hostname, username, password, secret=None, schema="https", cert_trusted=False, ws_client='initialize'):
         BuildPiKVM.__init__(self, hostname, username, password, secret, schema, cert_trusted)
+        PiKVMKeyboard.__init__(self)
+        PiKVMMouse.__init__(self)
+        
         if self.schema not in ["http", "https"]:
             self.logger.error("Schema must be http or https")
             raise
         if not self.certificate_trusted:
+            self.logger.debug("Disabling SSL certificate verification")
             requests.packages.urllib3.disable_warnings()
         self.systeminfo = self.get_system_info()
+        if ws_client == 'initialize':
+            self.ws_client = PiKVMWebsocket(self.hostname, self.username, self.password, self.secret, self.certificate_trusted)
+        else:
+            self.ws_client = ws_client
+        
+
+    def attach_ws_client(self, ws_client: PiKVMWebsocket):
+        """
+        Attaches a websocket to the streamer.
+        """
+        self.ws_client = ws_client
+        
 
     def _auth(self, path="/api/auth/check"):
         """
