@@ -51,7 +51,6 @@ jobs:
           "ubuntu-py310",
           "ubuntu-py311",
           "ubuntu-py312",
-          "ubuntu-pypy3",
 
           "macos-py310",
           "macos-py312",
@@ -84,10 +83,6 @@ jobs:
             os: ubuntu-latest
             tox_env: "py312"
             use_coverage: true
-          - name: "ubuntu-pypy3"
-            python: "pypy-3.9"
-            os: ubuntu-latest
-            tox_env: "pypy3-xdist"
 
           - name: "macos-py310"
             python: "3.10"
