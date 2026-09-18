@@ -19,7 +19,7 @@ and extend the capabilities of your PiKVM devices.
 
 ## Installation
 
-To install PiKVM, simply run the following command in your terminal:
+To install PiKVM-Lib, simply run the following command in your terminal:
 
 ```bash
 pip install pikvm-lib
